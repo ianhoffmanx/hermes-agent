@@ -2513,6 +2513,11 @@ def _propagate_module_import_root(cmd: list[str], env: dict[str, str]) -> None:
     from cron.scheduler_worker_env import pin_hermes_tree_on_pythonpath
 
     pin_hermes_tree_on_pythonpath(env, Path(__file__).resolve().parents[1])
+    # ``-m`` prepends the cwd to sys.path, and the worker's cwd is the task workspace. A worktree
+    # of this very repo carries its own ``hermes_bootstrap``/``pm``, which would shadow the pinned
+    # install: PM then keys dependency state off the worktree, finds nothing committed, and the
+    # worker dies with "no dependency environment is committed for this install".
+    env["PYTHONSAFEPATH"] = "1"
 
 
 def _absolute_hermes_path(path: str) -> str:

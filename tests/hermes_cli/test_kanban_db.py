@@ -1665,10 +1665,13 @@ def test_default_spawn_pins_repo_root_on_module_worker_pythonpath(tmp_path, monk
     monkeypatch.setattr(kbd, "_resolve_hermes_argv", lambda: [sys.executable, "-m", "hermes_cli.main"])
     kbd._default_spawn(task, str(tmp_path / "ws"))
     assert captured["env"]["PYTHONPATH"].split(os.pathsep)[0] == root
+    # The workspace may be a worktree of this repo: `-m` must not put it ahead of the install.
+    assert captured["env"]["PYTHONSAFEPATH"] == "1"
 
     monkeypatch.setattr(kbd, "_resolve_hermes_argv", lambda: ["/opt/hermes/bin/hermes"])
     kbd._default_spawn(task, str(tmp_path / "ws"))
     assert root not in captured["env"].get("PYTHONPATH", "").split(os.pathsep)
+    assert "PYTHONSAFEPATH" not in captured["env"]
 
 
 # ---------------------------------------------------------------------------
